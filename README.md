@@ -31,10 +31,17 @@ ws_business      = wss://wsaws.okx.com:8443/ws/v5/business
 domain           = https://aws.okx.com
 useServerTime    = False
 
-[notification]
+# optional
+[dingding]
 token            = token
 prefix           = prefix
 period           = 8-23
+
+# optional
+[telegram]
+token            = token
+period           = 8-23
+chat             = chat_id
 ```
 
 ### 3. Strategy
@@ -60,7 +67,7 @@ git clone git@github.com:hades-trading/hades-bot-example.git .
 ```shell
 pip3 install supervisor
 echo_supervisord_conf > /etc/supervisord.conf
-echo bot.ini >> /etc/supervisord.conf
+cat bot.ini >> /etc/supervisord.conf
 supervisord -c /etc/supervisord.conf
 supervisorctl start bot
 ```
