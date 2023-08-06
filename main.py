@@ -2,12 +2,16 @@ import asyncio
 import logging
 import platform
 import signal
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 import pandas as pd
 from hades.core import Strategy, Messenger, Order, Position, Tick, TradeBotConf, MessageFactory, MessageEnum, \
     TradeExecutor, ExchangeEnum
+
+
+def get_utc_8_now() -> str:
+    return (datetime.utcnow() + timedelta(hours=8)).strftime("%H:%M:%S")
 
 
 class NotificationStrategy(Strategy):
@@ -19,28 +23,27 @@ class NotificationStrategy(Strategy):
         self.messenger = messenger
 
     def on_order_status(self, orders: List[Order]):
-        now = datetime.now().strftime("%H:%M:%S")
         for order in orders:
             if order.status == 'TRADE':
-                self.messenger.notify(f'{now}-Order Filled')
+                self.messenger.notify(f'{get_utc_8_now()}-Order Filled')
             elif order.status == 'NEW':
-                self.messenger.notify(f'{now}-New Order')
+                self.messenger.notify(f'{get_utc_8_now()}-New Order')
             elif order.status == 'CANCELED':
-                self.messenger.notify(f'{now}-Order Cancelled')
+                self.messenger.notify(f'{get_utc_8_now()}-Order Cancelled')
 
     def on_position_status(self, positions: List[Position]):
         super().on_position_status(positions)
         for pos in positions:
             if pos.unrealized_profit_ratio < -20:
                 self.messenger.notify_with_interval(
-                    f'{datetime.now().strftime("%H:%M:%S")}-{pos.unrealized_profit_ratio}', 60 * 3)
+                    f'{get_utc_8_now()}-{pos.unrealized_profit_ratio}', 60 * 3)
 
     def on_tick(self, ticks: List[Tick]):
         super().on_tick(ticks)
         df = pd.DataFrame([tick.model_dump() for tick in self.ticks[-200:]])
         if df.price.std() > 30:
             self.messenger.notify_with_interval(
-                f'{datetime.now().strftime("%H:%M:%S")} rapid price change, current = {self.ticks[-1].price}')
+                f'{get_utc_8_now()} rapid price change, current = {self.ticks[-1].price}')
 
 
 async def shutdown() -> None:

@@ -53,7 +53,7 @@ sudo -s
 mkdir /app
 chown user:user /app
 cd /app
-git clone git@github.com:Icefoxes/trading-bot.git .
+git clone git@github.com:hades-trading/hades-bot-example.git .
 ```
 #### 4.2 setup supervisor
 
